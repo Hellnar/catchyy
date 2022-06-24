@@ -65,7 +65,7 @@ function init() {
     mainTheme.loop = true
     mainTheme.play()
     renderLives()
-    document.querySelector(".speed").textContent = PAUSE_TIME
+    setSpeed()
 }
 
 function createBlock() {
@@ -101,7 +101,7 @@ function checkAnswer() {
             document.getElementById("score").innerText = Number(document.getElementById("score").innerText) + block.innerText.length
             document.getElementById("solved").innerText = Number(document.getElementById("solved").innerText) + 1
             PAUSE_TIME -= SPEED_RATIO
-            document.querySelector(".speed").textContent = PAUSE_TIME
+            setSpeed()
             clearInterval(createBlocks)
             createBlocks = setInterval(createBlock, PAUSE_TIME)
             createBlock()
@@ -144,6 +144,10 @@ function decreaseLives() {
     renderLives()
 }
 
+function setSpeed() {
+    document.querySelector(".speed").textContent = `${(PAUSE_TIME / 1000).toFixed(2)}s`
+}
+
 function renderLives() {
     document.getElementById("lives").textContent = ("❤️".repeat(LIVES))
 }
@@ -165,7 +169,7 @@ function checkCollision() {
                 audioFail.play()
                 decreaseLives()
                 PAUSE_TIME -= SPEED_RATIO
-                document.querySelector(".speed").textContent = PAUSE_TIME
+                setSpeed()
                 clearInterval(createBlocks)
                 createBlocks = setInterval(createBlock, PAUSE_TIME)
                 createBlock()
