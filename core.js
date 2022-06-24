@@ -1,143 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-firestore.js";
 const DateTime = luxon.DateTime
-
-const tech = [
-    "aardvark",
-    "alligator",
-    "alpaca",
-    "antelope",
-    "ape",
-    "armadillo",
-    "baboon",
-    "badger",
-    "bat",
-    "bear",
-    "beaver",
-    "bison",
-    "boar",
-    "buffalo",
-    "bull",
-    "camel",
-    "canary",
-    "capybara",
-    "cat",
-    "chameleon",
-    "cheetah",
-    "chimpanzee",
-    "chinchilla",
-    "chipmunk",
-    "cougar",
-    "cow",
-    "coyote",
-    "crocodile",
-    "crow",
-    "deer",
-    "dingo",
-    "dog",
-    "donkey",
-    "dromedary",
-    "elephant",
-    "elk",
-    "ewe",
-    "ferret",
-    "finch",
-    "fish",
-    "fox",
-    "frog",
-    "gazelle",
-    "gila monster",
-    "giraffe",
-    "gnu",
-    "goat",
-    "gopher",
-    "gorilla",
-    "grizzly bear",
-    "ground hog",
-    "guinea pig",
-    "hamster",
-    "hedgehog",
-    "hippopotamus",
-    "hog",
-    "horse",
-    "hyena",
-    "ibex",
-    "iguana",
-    "impala",
-    "jackal",
-    "jaguar",
-    "kangaroo",
-    "koala",
-    "lamb",
-    "lemur",
-    "leopard",
-    "lion",
-    "lizard",
-    "llama",
-    "lynx",
-    "mandrill",
-    "marmoset",
-    "mink",
-    "mole",
-    "mongoose",
-    "monkey",
-    "moose",
-    "mountain goat",
-    "mouse",
-    "mule",
-    "muskrat",
-    "mustang",
-    "mynah bird",
-    "newt",
-    "ocelot",
-    "opossum",
-    "orangutan",
-    "oryx",
-    "otter",
-    "ox",
-    "panda",
-    "panther",
-    "parakeet",
-    "parrot",
-    "pig",
-    "platypus",
-    "polar bear",
-    "porcupine",
-    "porpoise",
-    "prairie dog",
-    "puma",
-    "rabbit",
-    "raccoon",
-    "ram",
-    "rat",
-    "reindeer",
-    "reptile",
-    "rhinoceros",
-    "salamander",
-    "seal",
-    "sheep",
-    "shrew",
-    "silver fox",
-    "skunk",
-    "sloth",
-    "snake",
-    "squirrel",
-    "tapir",
-    "tiger",
-    "toad",
-    "turtle",
-    "walrus",
-    "warthog",
-    "weasel",
-    "whale",
-    "wildcat",
-    "wolf",
-    "wolverine",
-    "wombat",
-    "woodchuck",
-    "yak",
-    "zebra"
-]
+import { dict as tech } from "./dictionary.js" 
 
 let PAUSE_TIME = 3000
 let SPEED_RATIO = 25
@@ -162,6 +26,7 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore()
 const scoresRef = collection(db, "scores")
+const topScoresQuery = query(collection(db, "scores"), orderBy("score", "desc"), orderBy("solved", "desc"), limit(100))
 
 document.getElementById("start").addEventListener("click", () => {
     startClick()
@@ -172,6 +37,13 @@ function startClick() {
     init()
     checkInput()
     detectEnter()
+    initCollisionCheck()
+    document.querySelector(".user-input").focus()
+}
+
+function startAgain() {
+    restart()
+    init()
     initCollisionCheck()
     document.querySelector(".user-input").focus()
 }
@@ -228,14 +100,15 @@ function checkAnswer() {
             audio.play()
             document.getElementById("score").innerText = Number(document.getElementById("score").innerText) + block.innerText.length
             document.getElementById("solved").innerText = Number(document.getElementById("solved").innerText) + 1
-            block.remove()
             PAUSE_TIME -= SPEED_RATIO
             document.querySelector(".speed").textContent = PAUSE_TIME
             clearInterval(createBlocks)
             createBlocks = setInterval(createBlock, PAUSE_TIME)
             createBlock()
+            block.remove()
         }
     }
+    console.log(result)
 
     if(!result.includes(true)) {
         shakeInput()
@@ -331,8 +204,8 @@ function createGameOver() {
 function submitResult() {
     addDoc(scoresRef, {
         name: document.getElementById("player-name").value,
-        score: document.getElementById("score").innerText,
-        solved: document.getElementById("solved").innerText,
+        score: parseInt(document.getElementById("score").innerText),
+        solved: parseInt(document.getElementById("solved").innerText),
         date: DateTime.now().ts
     })
     document.querySelector(".game-over").remove()
@@ -352,7 +225,7 @@ async function createScoresTable() {
     document.querySelector("main").appendChild(highScores)
 
     document.getElementById("again").addEventListener("click", () => {
-        startClick()
+        startAgain()
         document.querySelector(".high-scores").remove()
     })
 }
@@ -382,18 +255,16 @@ async function createRows() {
 }
 
 async function getScores() {
-    const snap = await getDocs(scoresRef)
+    const snap = await getDocs(topScoresQuery)
     console.log(snap.docs)
     let scores = []
     snap.docs.forEach(doc => {
         scores.push({...doc.data()})
     })
-    return scores
+    return sortScores(scores)
 }
 
-
-
-document.quetySelector("select").addEventListener("mousedown", (e) => {
-    e.preventDefault()
-})
+function sortScores(scores) {
+    return scores.sort((a, b) => (a.score === b.score) ? b.solved - a.solved : b.score - a.score)
+}
 

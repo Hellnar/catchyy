@@ -127,6 +127,9 @@ main .high-scores h2 {
 main .high-scores .scores-list {
   display: flex;
   flex-direction: column;
+  overflow-y: scroll;
+  padding-right: 10px;
+  max-height: 40vh;
 }
 
 main .high-scores .scores-list .score-row {
