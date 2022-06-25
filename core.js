@@ -38,6 +38,7 @@ function startClick() {
     checkInput()
     detectEnter()
     initCollisionCheck()
+    cleanInput(document.querySelector(".user-input"))
     document.querySelector(".user-input").focus()
 }
 
@@ -108,7 +109,6 @@ function checkAnswer() {
             block.remove()
         }
     }
-    console.log(result)
 
     if(!result.includes(true)) {
         shakeInput()
@@ -203,6 +203,7 @@ function createGameOver() {
     document.getElementById("submit-player").addEventListener("click", () => {
         submitResult()
     })
+    cleanInput(document.querySelector("#player-name"))
 }
 
 function submitResult() {
@@ -236,7 +237,6 @@ async function createScoresTable() {
 
 async function createRows() {
     const scores = await getScores()
-    console.log(scores)
     let tableRows = `
     <div class="score-row table-head">
         <p class="table-number">#</p>
@@ -260,7 +260,6 @@ async function createRows() {
 
 async function getScores() {
     const snap = await getDocs(topScoresQuery)
-    console.log(snap.docs)
     let scores = []
     snap.docs.forEach(doc => {
         scores.push({...doc.data()})
@@ -272,3 +271,6 @@ function sortScores(scores) {
     return scores.sort((a, b) => (a.score === b.score) ? b.solved - a.solved : b.score - a.score)
 }
 
+function cleanInput(input) {
+    input.addEventListener("input", () => input.value = input.value.replace(/[^A-Za-z0-9\s]/g,''))
+}
