@@ -9,4 +9,9 @@ Catchyy is a small fun game to check how good are you at typing on the keyboard
 
 Have fun!
 
+## To Do
+* Add greetings screen with instructions.
+* Hide buttons and inputs when it's needed.
+* Fix bugs with spawn, scoreboard, input.
+
 ![Catchyy](https://i.imgur.com/3YwQ6j7.png)
